@@ -1,0 +1,286 @@
+{
+	"info": {
+		"_postman_id": "bugflow-api-collection-v1",
+		"name": "BugFlow API Collection (Week 1 Contract)",
+		"description": "API contract for BugFlow Issue Tracking Platform. Shared by Ziyan (Backend Lead) for Ramya (Frontend) and Nandhini (QA).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "0. Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/",
+					"host": ["{{base_url}}"],
+					"path": [""]
+				}
+			}
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "1. Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"ramya\",\n  \"email\": \"ramya@bugflow.dev\",\n  \"password\": \"Ramya@2026\",\n  \"password_confirm\": \"Ramya@2026\",\n  \"first_name\": \"Ramya\",\n  \"last_name\": \"Frontend\",\n  \"role\": \"DEVELOPER\",\n  \"department\": \"Frontend UI\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register/",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "register", ""]
+						}
+					}
+				},
+				{
+					"name": "2. Login (Get JWT)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"if(data.access) { pm.collectionVariables.set('access_token', data.access); }",
+									"if(data.refresh) { pm.collectionVariables.set('refresh_token', data.refresh); }"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"ziyan\",\n  \"password\": \"BugFlow@2026\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login/",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login", ""]
+						}
+					}
+				},
+				{
+					"name": "3. Token Refresh",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/token/refresh/",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "token", "refresh", ""]
+						}
+					}
+				},
+				{
+					"name": "4. Get Current Profile (/me/)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/me/",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "me", ""]
+						}
+					}
+				},
+				{
+					"name": "5. List All Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/users/",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "users", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Projects",
+			"item": [
+				{
+					"name": "1. List Projects",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/projects/",
+							"host": ["{{base_url}}"],
+							"path": ["projects", ""]
+						}
+					}
+				},
+				{
+					"name": "2. Create Project",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"BugFlow Platform\",\n  \"key\": \"BF\",\n  \"description\": \"Core issue tracker web platform\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/projects/",
+							"host": ["{{base_url}}"],
+							"path": ["projects", ""]
+						}
+					}
+				},
+				{
+					"name": "3. Assign Member to Project",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"user_id\": 2,\n  \"role\": \"DEVELOPER\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/projects/1/members/",
+							"host": ["{{base_url}}"],
+							"path": ["projects", "1", "members", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Issues & Bugs",
+			"item": [
+				{
+					"name": "1. Bug Summary (Dashboard Cards)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/bugs/summary/",
+							"host": ["{{base_url}}"],
+							"path": ["bugs", "summary", ""]
+						}
+					}
+				},
+				{
+					"name": "2. List Issues (Filters & Search)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/bugs/?project=1&status=OPEN&search=crash",
+							"host": ["{{base_url}}"],
+							"path": ["bugs", ""],
+							"query": [
+								{"key": "project", "value": "1"},
+								{"key": "status", "value": "OPEN"},
+								{"key": "search", "value": "crash"}
+							]
+						}
+					}
+				},
+				{
+					"name": "3. Create Issue (Bug Report Form)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Login crash on malformed email\",\n  \"description\": \"500 Internal Server error when typing invalid email\",\n  \"reproduction_steps\": \"1. Visit /login\\n2. Type abc@@\\n3. Crash\",\n  \"issue_type\": \"BUG\",\n  \"severity\": \"CRITICAL\",\n  \"priority\": \"URGENT\",\n  \"module\": \"Authentication\",\n  \"tags\": \"auth,crash,login\",\n  \"environment\": \"Production / Chrome 120\",\n  \"project\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/bugs/",
+							"host": ["{{base_url}}"],
+							"path": ["bugs", ""]
+						}
+					}
+				},
+				{
+					"name": "4. Get Bug Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/bugs/1/",
+							"host": ["{{base_url}}"],
+							"path": ["bugs", "1", ""]
+						}
+					}
+				},
+				{
+					"name": "5. Update Bug (Status/Assignee)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{access_token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"IN_PROGRESS\",\n  \"priority\": \"HIGH\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/bugs/1/",
+							"host": ["{{base_url}}"],
+							"path": ["bugs", "1", ""]
+						}
+					}
+				}
+			]
+		}
+	]
+}
