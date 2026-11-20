@@ -25,6 +25,7 @@ def api_root(request):
             'auth': '/api/v1/auth/',
             'bugs': '/api/v1/bugs/',
             'projects': '/api/v1/projects/',
+            'ai': '/api/v1/ai/',
             'admin': '/admin/',
         }
     })
@@ -46,6 +47,9 @@ urlpatterns = [
 
     # Projects & Collaboration (Nandhini - Week 1)
     path('api/v1/projects/', include('apps.collab.urls')),
+
+    # AI Triage (Sreevarshini - AI & Smart Logic)
+    path('api/v1/ai/', include('apps.ai_triage.urls')),
 ]
 
 # Serve media files in development
