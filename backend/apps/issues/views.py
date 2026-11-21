@@ -8,6 +8,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.utils import timezone
 from django.db.models import Q
+from .listing import (
+    IssueExtraFilterBackend,
+    IssueOrderingFilter,
+    IssuePagination,
+    IssueSearchFilter,
+)
 from .models import Issue, IssueStatus
 from .serializers import (
     IssueListSerializer,
@@ -23,9 +29,15 @@ class IssueListCreateView(generics.ListCreateAPIView):
     POST /api/v1/bugs/     — Create a new issue
     """
     permission_classes = [permissions.IsAuthenticated]
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['title', 'description', 'module', 'tags']
-    ordering_fields = ['created_at', 'updated_at', 'severity', 'priority', 'status']
+    # Pagination / sorting / search live in listing.py (Nandhini, Week 2)
+    pagination_class = IssuePagination
+    filter_backends = [IssueExtraFilterBackend, IssueSearchFilter, IssueOrderingFilter]
+    search_fields = [
+        'title', 'description', 'module', 'tags',
+        'reporter__username', 'assignee__username',
+        'project__name', 'project__key',
+    ]
+    ordering_fields = ['id', 'title', 'created_at', 'updated_at', 'severity', 'priority', 'status']
     ordering = ['-created_at']
 
     def get_serializer_class(self):

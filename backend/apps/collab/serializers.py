@@ -1,3 +1,5 @@
+import re
+
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Project, ProjectMembership, ProjectMembershipRole
@@ -23,7 +25,7 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
 class ProjectSerializer(serializers.ModelSerializer):
     created_by_detail = UserDetailSerializer(source='created_by', read_only=True)
     memberships = ProjectMembershipSerializer(many=True, read_only=True)
-    members_count = serializers.IntegerField(source='members.count', read_only=True)
+    members_count = serializers.SerializerMethodField()
     issues_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -35,11 +37,25 @@ class ProjectSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')
 
+    def validate_key(self, value):
+        """Project keys are short uppercase prefixes such as BF or SEC2."""
+        value = value.strip().upper()
+        if not re.fullmatch(r'[A-Z][A-Z0-9]{1,9}', value):
+            raise serializers.ValidationError(
+                "Key must be 2-10 characters, start with a letter and contain only letters and digits."
+            )
+        return value
+
+    def get_members_count(self, obj):
+        # len() on .all() reuses the prefetched memberships (no extra query)
+        return len(obj.memberships.all())
+
     def get_issues_count(self, obj):
-        # Gracefully handle before issues table is queried
-        if hasattr(obj, 'issues'):
-            return obj.issues.count()
-        return 0
+        # The list/detail views annotate this value; fall back to a query otherwise
+        annotated = getattr(obj, '_issues_count', None)
+        if annotated is not None:
+            return annotated
+        return obj.issues.count()
 
     def create(self, validated_data):
         user = self.context['request'].user
