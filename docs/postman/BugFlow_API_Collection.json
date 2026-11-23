@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "bugflow-api-collection-v1",
-		"name": "BugFlow API Collection (Week 1 Contract)",
+		"name": "BugFlow API Collection (Week 1-2 Contract)",
 		"description": "API contract for BugFlow Issue Tracking Platform. Shared by Ziyan (Backend Lead) for Ramya (Frontend) and Nandhini (QA).",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -277,6 +277,336 @@
 							"raw": "{{base_url}}/bugs/1/",
 							"host": ["{{base_url}}"],
 							"path": ["bugs", "1", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Projects & Members (Nandhini)",
+			"item": [
+				{
+					"name": "Get Project Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/projects/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"projects",
+								"1",
+								""
+							]
+						},
+						"description": "Members and Managers/Admins only; non-members get 404."
+					}
+				},
+				{
+					"name": "List Project Members",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/projects/1/members/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"projects",
+								"1",
+								"members",
+								""
+							]
+						},
+						"description": "Any project member (or Manager/Admin)."
+					}
+				},
+				{
+					"name": "Change Member Role (re-POST)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/projects/1/members/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"projects",
+								"1",
+								"members",
+								""
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"user_id\": 2,\n  \"role\": \"QA\"\n}"
+						},
+						"description": "201 when newly added, 200 when an existing member role is updated."
+					}
+				},
+				{
+					"name": "Remove Member",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"description": "Managers/Admins only. 400 if it would remove the only Project Lead.",
+						"url": {
+							"raw": "{{base_url}}/projects/1/members/2/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"projects",
+								"1",
+								"members",
+								"2",
+								""
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Issue List: Paging, Sorting & Search (Nandhini)",
+			"item": [
+				{
+					"name": "Page 2, 25 per page",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bugs/?page=2&page_size=25",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bugs",
+								""
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "2"
+								},
+								{
+									"key": "page_size",
+									"value": "25"
+								}
+							]
+						},
+						"description": "Default page size 10, max 100."
+					}
+				},
+				{
+					"name": "Most severe first",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bugs/?ordering=severity",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bugs",
+								""
+							],
+							"query": [
+								{
+									"key": "ordering",
+									"value": "severity"
+								}
+							]
+						},
+						"description": "severity/priority/status sort by importance or workflow order. Use -severity for least severe first. Multi-field: ordering=severity,title"
+					}
+				},
+				{
+					"name": "Ticket lookup by key",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bugs/?search=BF-12",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bugs",
+								""
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "BF-12"
+								}
+							]
+						},
+						"description": "Bare id (12) also works."
+					}
+				},
+				{
+					"name": "Search reporter/assignee/project",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bugs/?search=dev1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bugs",
+								""
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "dev1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Filter: module + unassigned",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bugs/?module=API&unassigned=true",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bugs",
+								""
+							],
+							"query": [
+								{
+									"key": "module",
+									"value": "API"
+								},
+								{
+									"key": "unassigned",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Filter: date range",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bugs/?created_after=2026-11-01&created_before=2026-11-21",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bugs",
+								""
+							],
+							"query": [
+								{
+									"key": "created_after",
+									"value": "2026-11-01"
+								},
+								{
+									"key": "created_before",
+									"value": "2026-11-21"
+								}
+							]
+						},
+						"description": "YYYY-MM-DD; invalid dates return 400."
+					}
+				},
+				{
+					"name": "Filter: duplicates only",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bugs/?is_duplicate=true",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bugs",
+								""
+							],
+							"query": [
+								{
+									"key": "is_duplicate",
+									"value": "true"
+								}
+							]
 						}
 					}
 				}
