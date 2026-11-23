@@ -89,12 +89,36 @@ class IssueDetailView(generics.RetrieveUpdateDestroyAPIView):
     DELETE /api/v1/bugs/<id>/  — Delete an issue (Managers/Admins only)
     """
     permission_classes = [permissions.IsAuthenticated]
-    queryset = Issue.objects.select_related('project', 'reporter', 'assignee', 'duplicate_of')
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Issue.objects.select_related('project', 'reporter', 'assignee', 'duplicate_of')
+        # D-03: Restrict issue details to projects the user is a member of
+        if not (user.is_staff or getattr(user, 'role', '') in ['ADMIN', 'MANAGER']):
+            queryset = queryset.filter(project__members=user)
+        return queryset
 
     def get_serializer_class(self):
         if self.request.method in ['PUT', 'PATCH']:
             return IssueUpdateSerializer
         return IssueDetailSerializer
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        # D-08: Developers cannot close issues; QA/Manager/Admin only
+        new_status = request.data.get('status')
+        if new_status == IssueStatus.CLOSED:
+            user = request.user
+            if getattr(user, 'role', '') == 'DEVELOPER' and not user.is_staff:
+                return Response(
+                    {"detail": "Developers cannot close issues. Only QA Testers, Managers, or Admins can close issues."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
 
     def perform_update(self, serializer):
         instance = serializer.save()
@@ -129,12 +153,14 @@ class IssueSummaryView(APIView):
         user = request.user
         queryset = Issue.objects.all()
 
+        # D-04: Filter by user membership first so foreign project counts don't leak
+        if not (user.is_staff or getattr(user, 'role', '') in ['ADMIN', 'MANAGER']):
+            queryset = queryset.filter(project__members=user)
+
         # Filter by project if specified
         project_id = request.query_params.get('project')
         if project_id:
             queryset = queryset.filter(project_id=project_id)
-        elif not (user.is_staff or user.role in ['ADMIN', 'MANAGER']):
-            queryset = queryset.filter(project__members=user)
 
         total = queryset.count()
         open_count = queryset.filter(status=IssueStatus.OPEN).count()

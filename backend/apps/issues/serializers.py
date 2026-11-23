@@ -89,6 +89,15 @@ class IssueCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("You are not a member of this project.")
         return value
 
+    def validate(self, attrs):
+        project = attrs.get('project')
+        assignee = attrs.get('assignee')
+        # D-07: Assignee must be a member of the project
+        if project and assignee:
+            if not project.members.filter(id=assignee.id).exists():
+                raise serializers.ValidationError({"assignee": "Assignee must be a member of the project."})
+        return attrs
+
     def create(self, validated_data):
         validated_data['reporter'] = self.context['request'].user
         return super().create(validated_data)
@@ -105,8 +114,16 @@ class IssueUpdateSerializer(serializers.ModelSerializer):
             'title', 'description', 'reproduction_steps',
             'issue_type', 'severity', 'priority', 'status',
             'module', 'tags', 'environment',
-            'assignee', 'is_duplicate', 'duplicate_of', 'resolved_at'
+            'assignee', 'is_duplicate', 'duplicate_of'
         )
+
+    def validate(self, attrs):
+        assignee = attrs.get('assignee')
+        # D-07: Assignee must be a member of the project
+        if assignee and self.instance and self.instance.project:
+            if not self.instance.project.members.filter(id=assignee.id).exists():
+                raise serializers.ValidationError({"assignee": "Assignee must be a member of the project."})
+        return attrs
 
     def validate_status(self, value):
         """

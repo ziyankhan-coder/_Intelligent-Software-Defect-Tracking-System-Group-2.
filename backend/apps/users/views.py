@@ -1,6 +1,7 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
+from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth import get_user_model
 from .serializers import CustomTokenObtainPairSerializer, UserRegistrationSerializer, UserDetailSerializer
 
@@ -53,4 +54,5 @@ class UserListView(generics.ListAPIView):
     queryset = User.objects.all().order_by('username')
     serializer_class = UserDetailSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
     filterset_fields = ['role', 'department']

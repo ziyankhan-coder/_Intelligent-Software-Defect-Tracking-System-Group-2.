@@ -55,14 +55,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop('password_confirm')
         password = validated_data.pop('password')
-        role = validated_data.get('role', UserRole.DEVELOPER)
+        # D-01: Public registration always creates DEVELOPER role, ignoring any self-assigned role
+        validated_data.pop('role', None)
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
             password=password,
             first_name=validated_data.get('first_name', ''),
             last_name=validated_data.get('last_name', ''),
-            role=role,
+            role=UserRole.DEVELOPER,
             department=validated_data.get('department', '')
         )
         return user
@@ -74,4 +75,4 @@ class UserDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'first_name', 'last_name', 'role', 'role_display', 'department', 'date_joined')
-        read_only_fields = ('id', 'date_joined')
+        read_only_fields = ('id', 'role', 'date_joined')

@@ -76,15 +76,11 @@ class TestRegistration:
     def test_AUTH_10_invalid_role_rejected(self, client, db):
         assert client.post(REGISTER, valid_payload(role='SUPERHERO'), format='json').status_code == 400
 
-    @pytest.mark.defect
-    @pytest.mark.xfail(strict=False, reason="D-01: public registration lets anyone self-assign the ADMIN role")
     def test_AUTH_11_cannot_self_register_as_admin(self, client, db):
         client.post(REGISTER, valid_payload(role='ADMIN'), format='json')
         user = User.objects.get(username='newuser')
         assert user.role != 'ADMIN'
 
-    @pytest.mark.defect
-    @pytest.mark.xfail(strict=False, reason="D-01: public registration lets anyone self-assign the MANAGER role")
     def test_AUTH_12_cannot_self_register_as_manager(self, client, db):
         client.post(REGISTER, valid_payload(role='MANAGER'), format='json')
         assert User.objects.get(username='newuser').role != 'MANAGER'
@@ -180,8 +176,6 @@ class TestProfile:
         dev.refresh_from_db()
         assert dev.department == 'Platform'
 
-    @pytest.mark.defect
-    @pytest.mark.xfail(strict=False, reason="D-02: any user can promote themselves to ADMIN via PATCH /auth/me/")
     def test_AUTH_42_cannot_change_own_role(self, auth, dev):
         auth(dev).patch(ME, {'role': 'ADMIN'}, format='json')
         dev.refresh_from_db()
@@ -196,8 +190,6 @@ class TestProfile:
         names = {u['username'] for u in response.json()['results']}
         assert {'dev', 'qa'} <= names
 
-    @pytest.mark.defect
-    @pytest.mark.xfail(strict=False, reason="D-05: ?role= filter on /auth/users/ is ignored (django-filter not enabled)")
     def test_AUTH_45_user_list_role_filter_works(self, auth, dev, qa, manager):
         response = auth(dev).get(USERS, {'role': 'QA'})
         roles = {u['role'] for u in response.json()['results']}

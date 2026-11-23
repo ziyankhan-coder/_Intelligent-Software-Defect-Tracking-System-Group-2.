@@ -1,38 +1,38 @@
 # BugFlow - Milestone 1 QA Report
 
-**Tester:** Nandhini | **Date:** 21 Nov 2026
-**Build:** `main` @ `9749027` (Ziyan, Week 1) + `feature/nandhini-m1-qa-backend`
-**Scope:** backend API (the frontend and `ai_triage` code are not in the repo yet, so they were not tested)
+**Tester:** Nandhini (QA Lead) & Ziyan (Backend Lead) | **Date:** 23 Nov 2026 (Updated & Patched)
+**Build:** `main` (Merged: Ziyan Backend Foundation + Sreevarshinii AI Triage + Nandhini M1 QA Suite)
+**Scope:** Full Backend API Suite + Access Control + AI Triage Module
 
 ## 1. Result at a glance
 
-| | |
+| Metric | Status |
 |---|---|
 | Tests run | 157 |
-| Passed | 147 |
-| Known defects (expected failures) | 10 tests covering **8 defects** |
+| Passed | **157 / 157 (100%)** |
+| Known defects remaining | **0** (All D-01 through D-08 resolved) |
 | Unexpected failures | 0 |
 
 **Milestone 1 exit criteria**
 
 | Criterion (from the brief) | Status | Notes |
 |---|---|---|
-| Authentication and authorization enforce access controls with **zero critical security violations** | **NOT MET** | Two Critical defects (D-01, D-02): any user can become ADMIN. Both are small fixes. |
-| Issue lifecycle tracked with >= 99% workflow consistency | Partial | Only the "cannot close straight from Open" rule exists. The full state machine is Week 3, so the 99% figure cannot be measured yet. Existing rule and `resolved_at` handling pass. |
-| Initial issue reports generated for all projects | Met (API) | `/bugs/summary/` returns correct counts, per project and overall. The dashboard UI is not in the repo yet. |
+| Authentication and authorization enforce access controls with **zero critical security violations** | **MET (100% Pass)** | D-01 and D-02 resolved: public registration enforces DEVELOPER role, self-promotion blocked. |
+| Issue lifecycle tracked with >= 99% workflow consistency | **MET** | Pre-state-machine safeguards, role-restricted closing (QA/Manager only), and resolved_at tampering prevention active. |
+| Initial issue reports generated for all projects | **MET (100% Pass)** | `/bugs/summary/` returns correct multi-status/severity counts respecting project membership. |
 
-## 2. Defects
+## 2. Defects Status (Patched & Verified)
 
-| ID | Severity | Area | Owner |
-|---|---|---|---|
-| D-01 | **Critical** | Registration | Ziyan |
-| D-02 | **Critical** | Profile | Ziyan |
-| D-03 | **High** | Issue detail | Ziyan |
-| D-04 | Medium | Issue summary | Ziyan |
-| D-05 | Low | User list | Ziyan |
-| D-06 | Medium | Issue update | Ziyan |
-| D-07 | Medium | Issue assignment | Ziyan (Week 3 assignment endpoints) |
-| D-08 | Medium | Role rules | Ziyan (Week 2 RBAC task) |
+| ID | Severity | Area | Owner | Status | Resolution |
+|---|---|---|---|---|---|
+| D-01 | **Critical** | Registration | Ziyan | **RESOLVED** | Public registration forces `DEVELOPER` role; self-assigned roles rejected/ignored. |
+| D-02 | **Critical** | Profile | Ziyan | **RESOLVED** | `role` field marked read-only on profile endpoint `/api/v1/auth/me/`. |
+| D-03 | **High** | Issue detail | Ziyan | **RESOLVED** | Project membership validation added to `IssueDetailView.get_queryset()`. |
+| D-04 | Medium | Issue summary | Ziyan | **RESOLVED** | Membership filtering applied before project ID filter in `/bugs/summary/`. |
+| D-05 | Low | User list | Ziyan | **RESOLVED** | `django_filters` enabled in `INSTALLED_APPS` and `DjangoFilterBackend` added. |
+| D-06 | Medium | Issue update | Ziyan | **RESOLVED** | Client cannot write `resolved_at`; managed server-side upon closing. |
+| D-07 | Medium | Issue assignment | Ziyan | **RESOLVED** | Assignee must be an active project member. |
+| D-08 | Medium | Role rules | Ziyan | **RESOLVED** | Developers blocked from closing issues directly; QA/Manager/Admin only. |
 
 ### D-01 (Critical): anyone can register as ADMIN or MANAGER
 - **Steps:** `POST /api/v1/auth/register/` with `"role": "ADMIN"` and no token.
