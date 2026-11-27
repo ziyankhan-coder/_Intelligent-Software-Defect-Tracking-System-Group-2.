@@ -13,9 +13,6 @@ cp .env.example .env          # Configure your environment
 python manage.py migrate
 python manage.py runserver 8000
 ```
-
-Visit: http://127.0.0.1:8000/api/
-
 ## 📡 API Endpoints
 
 | Method | Endpoint | Description |
@@ -60,3 +57,9 @@ curl http://127.0.0.1:8000/api/v1/bugs/ \
 - **Auth:** SimpleJWT (HMAC-SHA256)
 - **Database:** PostgreSQL (SQLite for local dev)
 - **Frontend:** React.js + Tailwind CSS (separate repo)
+## Project Status
+- [x] Project setup, modular Django apps, PostgreSQL schema
+- [x] JWT authentication (login, register, token refresh)
+- [x] Issue and project REST APIs
+- [ ] Role-based access control (in progress)
+- [ ] Workflow state machine, sprints, analytics, AI triage
